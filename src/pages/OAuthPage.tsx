@@ -25,6 +25,8 @@ interface ProviderState {
   polling?: boolean;
   projectId?: string;
   projectIdError?: string;
+  proxyUrl?: string;
+  proxyUrlError?: string;
   callbackUrl?: string;
   callbackSubmitting?: boolean;
   callbackStatus?: 'success' | 'error';
@@ -72,6 +74,7 @@ const PROVIDERS: { id: OAuthProvider; titleKey: string; hintKey: string; urlLabe
 
 const CALLBACK_SUPPORTED: OAuthProvider[] = ['codex', 'anthropic', 'antigravity', 'gemini-cli'];
 const SUCCESS_RESET_DELAY_MS = 5000;
+const CLAUDE_OAUTH_PROXY_PROTOCOLS = new Set(['http:', 'https:', 'socks5:', 'socks5h:']);
 const getProviderI18nPrefix = (provider: OAuthProvider) => provider.replace('-', '_');
 const getAuthKey = (provider: OAuthProvider, suffix: string) =>
   `auth_login.${getProviderI18nPrefix(provider)}_${suffix}`;
@@ -79,6 +82,29 @@ const getAuthKey = (provider: OAuthProvider, suffix: string) =>
 const getIcon = (icon: string | { light: string; dark: string }, theme: 'light' | 'dark') => {
   return typeof icon === 'string' ? icon : icon[theme];
 };
+
+function hasExplicitProxyPort(proxyUrl: string): boolean {
+  const authority = proxyUrl.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').split(/[/?#]/, 1)[0];
+  const hostPort = authority.includes('@') ? authority.slice(authority.lastIndexOf('@') + 1) : authority;
+  if (hostPort.startsWith('[')) {
+    return /^\[[^\]]+\]:\d+$/.test(hostPort);
+  }
+  return /:\d+$/.test(hostPort);
+}
+
+function getClaudeOAuthProxyValidationError(proxyUrl: string): 'required' | 'invalid' | undefined {
+  const value = proxyUrl.trim();
+  if (!value) return 'required';
+  if (['direct', 'none'].includes(value.toLowerCase())) return 'invalid';
+  try {
+    const parsed = new URL(value);
+    if (!CLAUDE_OAUTH_PROXY_PROTOCOLS.has(parsed.protocol) || !parsed.hostname) return 'invalid';
+    if ((parsed.pathname && parsed.pathname !== '/') || parsed.search || parsed.hash) return 'invalid';
+    return hasExplicitProxyPort(value) ? undefined : 'invalid';
+  } catch {
+    return 'invalid';
+  }
+}
 
 export function OAuthPage() {
   const { t } = useTranslation();
@@ -148,6 +174,9 @@ export function OAuthPage() {
       if (provider === 'gemini-cli' && current.projectId !== undefined) {
         next.projectId = current.projectId;
       }
+      if (provider === 'anthropic' && current.proxyUrl !== undefined) {
+        next.proxyUrl = current.proxyUrl;
+      }
       return {
         ...prev,
         [provider]: next
@@ -209,9 +238,26 @@ export function OAuthPage() {
         ? 'ALL'
         : rawProjectId
       : undefined;
+    const rawProxyUrl = provider === 'anthropic' ? (states[provider]?.proxyUrl || '').trim() : '';
+    const proxyValidationError =
+      provider === 'anthropic'
+        ? getClaudeOAuthProxyValidationError(rawProxyUrl)
+        : undefined;
+    if (provider === 'anthropic' && proxyValidationError) {
+      const message = t(
+        proxyValidationError === 'required'
+          ? 'auth_login.anthropic_oauth_proxy_required'
+          : 'auth_login.anthropic_oauth_proxy_invalid'
+      );
+      updateProviderState(provider, { proxyUrlError: message });
+      showNotification(message, 'warning');
+      return;
+    }
     // 项目 ID 可选：留空自动选择第一个可用项目；输入 ALL 获取全部项目
     if (provider === 'gemini-cli') {
       updateProviderState(provider, { projectIdError: undefined });
+    } else if (provider === 'anthropic') {
+      updateProviderState(provider, { proxyUrlError: undefined });
     }
     updateProviderState(provider, {
       url: undefined,
@@ -226,7 +272,11 @@ export function OAuthPage() {
     try {
       const res = await oauthApi.startAuth(
         provider,
-        provider === 'gemini-cli' ? { projectId: projectId || undefined } : undefined
+        provider === 'gemini-cli'
+          ? { projectId: projectId || undefined }
+          : provider === 'anthropic'
+            ? { proxyUrl: rawProxyUrl }
+            : undefined
       );
       if (!res.state) {
         const message = t('auth_login.missing_state');
@@ -410,6 +460,30 @@ export function OAuthPage() {
                           })
                         }
                         placeholder={t('auth_login.gemini_cli_project_id_placeholder')}
+                      />
+                    </div>
+                  )}
+                  {provider.id === 'anthropic' && (
+                    <div className={styles.anthropicProxyField}>
+                      <Input
+                        label={t('auth_login.anthropic_oauth_proxy_label')}
+                        hint={t('auth_login.anthropic_oauth_proxy_hint')}
+                        value={state.proxyUrl || ''}
+                        error={state.proxyUrlError}
+                        disabled={Boolean(state.polling)}
+                        onChange={(e) => {
+                          const proxyUrl = e.target.value;
+                          const validationError = proxyUrl.trim()
+                            ? getClaudeOAuthProxyValidationError(proxyUrl)
+                            : undefined;
+                          updateProviderState(provider.id, {
+                            proxyUrl,
+                            proxyUrlError: validationError
+                              ? t('auth_login.anthropic_oauth_proxy_invalid')
+                              : undefined
+                          });
+                        }}
+                        placeholder={t('auth_login.anthropic_oauth_proxy_placeholder')}
                       />
                     </div>
                   )}

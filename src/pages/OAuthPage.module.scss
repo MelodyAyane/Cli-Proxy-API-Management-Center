@@ -151,7 +151,8 @@
   gap: $spacing-sm;
 }
 
-.geminiProjectField {
+.geminiProjectField,
+.anthropicProxyField {
   :global(.form-group) {
     margin-top: 0;
     margin-bottom: 0;
