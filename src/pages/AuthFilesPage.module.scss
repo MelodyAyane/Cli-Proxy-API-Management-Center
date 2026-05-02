@@ -78,7 +78,7 @@
   margin-bottom: $spacing-md;
 }
 
-// 筛选区域
+// Filter area
 .filterSection {
   display: flex;
   flex-direction: column;
@@ -100,7 +100,6 @@
   }
 }
 
-
 .filterAllIconWrap {
   position: relative;
   border-color: color-mix(in srgb, var(--primary-color) 20%, var(--border-color));
@@ -118,7 +117,6 @@
   display: block;
   color: color-mix(in srgb, var(--primary-color) 70%, var(--text-primary));
 }
-
 
 .filterContent {
   display: flex;
@@ -244,7 +242,7 @@
   gap: $spacing-md;
   align-items: flex-end;
 
-  // 修复 Input 组件在 filterItem 中的嵌套样式
+  // Keep nested Input controls aligned inside filter items.
   :global(.form-group) {
     margin: 0;
   }
@@ -339,7 +337,7 @@
   }
 }
 
-// 卡片网格
+// Card grid
 .fileGrid {
   display: grid;
   gap: $spacing-md;
@@ -459,7 +457,7 @@
   }
 }
 
-// 卡片渐变背景 — subtle tint only
+// Card gradient backgrounds, subtle tint only.
 .antigravityCard {
   background-image: linear-gradient(180deg, rgba(224, 247, 250, 0.06), transparent);
 }
@@ -654,7 +652,7 @@
   color: #ffd862;
 }
 
-// 单个认证文件卡片
+// Single auth file card
 .fileCard {
   position: relative;
   overflow: hidden;
@@ -1139,7 +1137,7 @@
   letter-spacing: 0.03em;
 }
 
-// 状态监测栏
+// Status monitor bar
 .statusBar {
   display: flex;
   align-items: center;
@@ -1389,6 +1387,257 @@
   box-shadow: 0 0 0 3px rgba($error-color, 0.12);
 }
 
+.proxyManagerContent {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  max-height: min(68vh, 720px);
+  overflow: hidden;
+}
+
+.proxyManagerIntro {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+.proxyManagerFormats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
+
+  span,
+  code {
+    display: block;
+    min-width: 0;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--bg-primary) 76%, transparent);
+    color: var(--text-primary);
+    font-size: 12px;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.proxyManagerToolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: center;
+  gap: $spacing-sm;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.proxyManagerSearch {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 12%, transparent);
+  }
+}
+
+.proxyManagerCount {
+  justify-self: end;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+
+  @include mobile {
+    justify-self: start;
+  }
+}
+
+.proxyManagerTableWrap {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.proxyManagerTable {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 58%, transparent);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 28%;
+  }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 12%;
+  }
+
+  th:nth-child(3),
+  td:nth-child(3) {
+    width: 34%;
+  }
+
+  th:nth-child(4),
+  td:nth-child(4) {
+    width: 17%;
+  }
+
+  th:nth-child(5),
+  td:nth-child(5) {
+    width: 9%;
+    text-align: right;
+  }
+}
+
+.proxyManagerCredential {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.proxyManagerCredentialLabel {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  @include text-ellipsis;
+}
+
+.proxyManagerCredentialName {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.35;
+  word-break: break-all;
+}
+
+.proxyManagerType {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-tertiary) 78%, transparent);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  @include text-ellipsis;
+}
+
+.proxyManagerInput {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 12%, transparent);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.72;
+  }
+}
+
+.proxyManagerInputInvalid {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 2px rgba($error-color, 0.12);
+}
+
+.proxyManagerStatus {
+  display: inline-flex;
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.proxyManagerStatusNeutral {
+  color: var(--text-secondary);
+}
+
+.proxyManagerStatusDirty {
+  color: var(--warning-text);
+}
+
+.proxyManagerStatusOk {
+  color: var(--success-color, #16a34a);
+  font-weight: 600;
+}
+
+.proxyManagerStatusError {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
 .cardActions {
   display: flex;
   align-items: center;
@@ -1502,7 +1751,7 @@
   }
 }
 
-// 分页
+// Pagination
 .pagination {
   display: flex;
   justify-content: center;
@@ -1586,7 +1835,7 @@
   border-radius: $radius-md;
 }
 
-// OAuth 模型禁用
+// OAuth model exclusion
 .excludedList {
   display: flex;
   flex-direction: column;
@@ -1634,7 +1883,7 @@
   flex-shrink: 0;
 }
 
-// OAuth 模型禁用表单：提供商快捷标签
+// OAuth model exclusion form, provider quick tags.
 .providerField {
   display: flex;
   flex-direction: column;
@@ -1688,7 +1937,7 @@
   }
 }
 
-// OAuth 模型别名 - 映射概览
+// OAuth model aliases, mapping overview.
 .aliasChartSection {
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-lg;
@@ -1756,7 +2005,7 @@
   }
 }
 
-// OAuth 模型映射表单
+// OAuth model mapping form
 .mappingRow {
   display: grid;
   grid-template-columns: 1fr auto 1fr auto auto;
@@ -1782,7 +2031,7 @@
   align-items: center;
 }
 
-// 详情弹窗
+// Detail modal
 .detailContent {
   max-height: 400px;
   overflow: auto;
@@ -1801,7 +2050,7 @@
   margin: 0;
 }
 
-// 表单
+// Form
 .formGroup {
   display: flex;
   flex-direction: column;
@@ -1844,7 +2093,7 @@
   padding: $spacing-lg;
 }
 
-// 模型列表弹窗
+// Model list modal
 .modelsList {
   display: flex;
   flex-direction: column;
@@ -1922,7 +2171,7 @@
   flex-shrink: 0;
 }
 
-// 排除模型勾选列表
+// Excluded model checklist
 .excludedCheckList {
   display: flex;
   flex-direction: column;

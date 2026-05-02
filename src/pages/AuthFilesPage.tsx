@@ -42,6 +42,7 @@ import {
 import { AuthFileCard } from '@/features/authFiles/components/AuthFileCard';
 import { AuthFileModelsModal } from '@/features/authFiles/components/AuthFileModelsModal';
 import { AuthFilesPrefixProxyEditorModal } from '@/features/authFiles/components/AuthFilesPrefixProxyEditorModal';
+import { AuthFilesProxyManagerModal } from '@/features/authFiles/components/AuthFilesProxyManagerModal';
 import { OAuthExcludedCard } from '@/features/authFiles/components/OAuthExcludedCard';
 import { OAuthModelAliasCard } from '@/features/authFiles/components/OAuthModelAliasCard';
 import { useAuthFilesData } from '@/features/authFiles/hooks/useAuthFilesData';
@@ -67,8 +68,7 @@ const BATCH_BAR_HIDDEN_TRANSFORM = 'translateX(-50%) translateY(56px)';
 const DEFAULT_REGULAR_PAGE_SIZE = 9;
 const DEFAULT_COMPACT_PAGE_SIZE = 12;
 
-const escapeWildcardSearchSegment = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeWildcardSearchSegment = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const buildWildcardSearch = (value: string): RegExp | null => {
   if (!value.includes('*')) return null;
@@ -99,6 +99,7 @@ export function AuthFilesPage() {
   const [viewMode, setViewMode] = useState<'diagram' | 'list'>('list');
   const [sortMode, setSortMode] = useState<AuthFilesSortMode>('default');
   const [batchActionBarVisible, setBatchActionBarVisible] = useState(false);
+  const [proxyManagerOpen, setProxyManagerOpen] = useState(false);
   const [uiStateHydrated, setUiStateHydrated] = useState(false);
   const floatingBatchActionsRef = useRef<HTMLDivElement>(null);
   const batchActionAnimationRef = useRef<AnimationPlaybackControlsWithThen | null>(null);
@@ -202,10 +203,7 @@ export function AuthFilesPage() {
       if (typeof persisted.disabledOnly === 'boolean') {
         setDisabledOnly(persisted.disabledOnly);
       }
-      if (
-        typeof persistedCompactMode !== 'boolean' &&
-        typeof persisted.compactMode === 'boolean'
-      ) {
+      if (typeof persistedCompactMode !== 'boolean' && typeof persisted.compactMode === 'boolean') {
         setCompactMode(persisted.compactMode);
       }
       if (typeof persisted.search === 'string') {
@@ -221,11 +219,11 @@ export function AuthFilesPage() {
       const regularPageSize =
         typeof persisted.regularPageSize === 'number' && Number.isFinite(persisted.regularPageSize)
           ? clampCardPageSize(persisted.regularPageSize)
-          : legacyPageSize ?? DEFAULT_REGULAR_PAGE_SIZE;
+          : (legacyPageSize ?? DEFAULT_REGULAR_PAGE_SIZE);
       const compactPageSize =
         typeof persisted.compactPageSize === 'number' && Number.isFinite(persisted.compactPageSize)
           ? clampCardPageSize(persisted.compactPageSize)
-          : legacyPageSize ?? DEFAULT_COMPACT_PAGE_SIZE;
+          : (legacyPageSize ?? DEFAULT_COMPACT_PAGE_SIZE);
       setPageSizeByMode({
         regular: regularPageSize,
         compact: compactPageSize,
@@ -420,7 +418,7 @@ export function AuthFilesPage() {
       copy.sort((a, b) => {
         const pa = parsePriorityValue(a.priority ?? a['priority']) ?? 0;
         const pb = parsePriorityValue(b.priority ?? b['priority']) ?? 0;
-        return pb - pa; // 高优先级排前面
+        return pb - pa; // Higher priority first.
       });
     }
     return copy;
@@ -670,6 +668,14 @@ export function AuthFilesPage() {
               {t('common.refresh')}
             </Button>
             <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setProxyManagerOpen(true)}
+              disabled={disableControls || loading}
+            >
+              {t('auth_files.proxy_manager_button')}
+            </Button>
+            <Button
               size="sm"
               onClick={handleUploadClick}
               disabled={disableControls || uploading}
@@ -916,6 +922,14 @@ export function AuthFilesPage() {
         onCopyText={copyTextWithNotification}
         onSave={handlePrefixProxySave}
         onChange={handlePrefixProxyChange}
+      />
+
+      <AuthFilesProxyManagerModal
+        open={proxyManagerOpen}
+        files={files}
+        disableControls={disableControls}
+        onClose={() => setProxyManagerOpen(false)}
+        onReload={loadFiles}
       />
 
       {batchActionBarVisible && typeof document !== 'undefined'
